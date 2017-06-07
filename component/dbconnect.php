@@ -1,9 +1,9 @@
 <?php
     //Enter your database connection details here.
-    $host = 'localhost'; //HOST NAME.
-    $db_name = 'bookstore'; //Database Name
-    $db_username = 'root'; //Database Username
-    $db_password = 'htfhtf'; //Database Password
+    $host = 'testingforfun.space'; //HOST NAME.
+    $db_name = 'gio_bookstore'; //Database Name
+    $db_username = 'gio_root'; //Database Username
+    $db_password = 'h4nsk3mpl0ganteng'; //Database Password
 
     try
     {
