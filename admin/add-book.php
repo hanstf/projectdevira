@@ -19,6 +19,12 @@
                 <div class="shopping-cart-area section-padding">
                     <div class="container">
                         <div class="row">
+
+                            <h1>
+                   ADD BOOK
+               </h1>
+                        </div>
+                        <div class="row">
                             <div class="col-md-12">
                                 <div class="wishlist-table-area table-responsive">
                                     <table>

@@ -108,6 +108,12 @@ body {
 .header-logo > a {
   display: block;
   padding: 25px 0;
+    
+}
+.header-logo > h1 {
+  display: block;
+  padding: 25px 0;
+    font-weight: bolder;
 }
 .mainmenu nav ul#nav li {
   display: inline-block;
@@ -133,6 +139,10 @@ body {
 }
 .mainmenu nav ul#nav li a:hover {
   background: #f7f7f7 none repeat scroll 0 0;
+}
+.mainmenu nav ul#nav li a.active {
+  background: #32b6f4 none repeat scroll 0 0;
+    color: white;
 }
 .mainmenu nav ul#nav li::before {
   background: #32b6f4 none repeat scroll 0 0;
@@ -1980,6 +1990,7 @@ a.wish-btn {
 }
 .t-product-name {
   width: 170px;
+  padding: 10px;
 }
 .product-edit {
   width: 112px;
