@@ -2,7 +2,6 @@
     require_once '../component/dbconnect.php';
     require_once '../component/database.php';
     $db = new database($pdo);
-    $transactions = $db->get("SELECT COUNT(RANDOM_ID) AS TOTAL_ROWS, RANDOM_ID FROM transaction GROUP BY RANDOM_ID");
 ?>
 
 
@@ -15,6 +14,41 @@
         <body>
             <?php
     require 'template/header.php';
+        
+         if (isset($_POST["code"]) 
+        && isset($_POST["title"]) 
+        && isset($_POST["description"]) 
+        && isset($_POST["stock"]) 
+        && isset($_POST["price"])
+        && isset($_POST["deleted"])
+       ) {
+        if (empty($_POST["code"]) 
+        || empty($_POST["title"]) 
+        || empty($_POST["description"]) 
+        || empty($_POST["stock"]) 
+        || empty($_POST["price"])
+        || empty($_POST["deleted"])
+       ) {  
+        } else {
+            $db->update(
+                       "UPDATE book SET "
+                       . "TITLE = '" . $_POST["title"] . "', " 
+                       . "DSCP = '" . $_POST["description"] . "', " 
+                       . "STOCK = '" . $_POST["stock"] . "', " 
+                       . "IS_DEL = '" . $_POST["deleted"] . "', " 
+                       . "PRICE = '" . $_POST["price"] . "', " 
+                       . "DT_UPDATE = NOW(), " 
+                       . "UPDATE_BY = 'hans' WHERE CODE = '" .  $_POST["code"] . "'"
+                        ); // will get the update by from the session available for nw hard code to hans 
+            echo "<div class='saved-class'>
+                    <div class='container'><div class='row'>
+<h3>Successfully saved</h3>
+                        </div></div></div>";
+            unset($_POST);
+        } 
+    }
+
+    $books = $db->get("SELECT * FROM book");
 ?>
                 <div class="shopping-cart-area section-padding">
                     <div class="container">
@@ -30,58 +64,82 @@
                                     <table>
                                         <thead>
                                             <tr>
-                                                <th class="product-remove">Random Id</th>
-                                                <th class="product-image">Username</th>
-                                                <th class="product-quantity">Create Date</th>
-                                                <th class="t-product-name">Book Code</th>
-                                                <th class="product-edit">Quantity</th>
-                                                <th class="product-unit-price">Status</th>
-                                                <th class="product-subtotal">Sub Total</th>
-                                                <th class="product-subtotal">Total Price</th>
+                                                <th class="product-remove">No. </th>
+                                                <th class="product-image">Image</th>
+                                                <th class="product-image">Code</th>
+                                                <th class="product-quantity">Title</th>
+                                                <th class="product-name">Description</th>
+                                                <th class="product-edit">Stock</th>
+                                                <th class="product-subtotal">Price</th>
+                                                <th class="product-unit-price">Deleted</th>
+                                                <th class="product-subtotal">Create Date</th>
+                                                <th class="product-subtotal">Create By</th>
+                                                <th class="product-subtotal">Update Date</th>
+                                                <th class="product-subtotal">Update By</th>
+                                                <th class="product-subtotal"></th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php
-                                        foreach ($transactions as $key => &$info) {
-                                            $transaction = $db->get("SELECT t.USERNAME, t.DT_CREATE, t.BOOK_CODE, t.QUANTITY, t.STATUS, b.price, SUM(b.price) as TOTAL_PRICE FROM transaction t INNER JOIN book b ON t.BOOK_CODE = b.CODE WHERE t.RANDOM_ID = '" . $info[1] . "'");
+                                        foreach ($books as $key => &$info) {
                                             
                                     ?>
                                                 <tr>
-                                                    <td class="t-product-name" colspan="<?php echo $info[0] ?>">
+                                                    <td class="t-product-name" >
+                                                        <?php echo $info[0]+1 ?>
+                                                    </td>
+                                                    <td class="t-product-name" >
+                                                        <img width="170px" height="170px" src="../img/books/<?php echo $info[1] ?>.jpg"></img>
+                                                    </td>
+                                                    <td class="t-product-name" >
                                                         <?php echo $info[1] ?>
                                                     </td>
-                                                    <td class="t-product-name" colspan="<?php echo $info[0] ?>">
-                                                        <?php echo $transaction[0][0] ?>
+                                                    <td class="t-product-name" >
+                                                        <?php echo $info[2] ?>
+                                                    </td>
+                                                    <td class="t-product-name" >
+                                                        <?php echo $info[3] ?>
+                                                    </td>
+                                                    <td class="t-product-name" >
+                                                        <?php echo $info[4] ?>
+                                                    </td>
+                                                    <td class="t-product-name" >
+                                                        <?php echo $info[10] ?>
+                                                    </td>
+                                                    <td class="t-product-name" >
+                                                        <?php echo $info[5] ?>
                                                     </td>
 
-                                                    <td class="t-product-name" colspan="<?php echo $info[0] ?>">
-                                                        <?php echo $transaction[0][1] ?>
+                                                    <td class="t-product-name" >
+                                                        <?php echo $info[6] ?>
                                                     </td>
-                                                    <?php
-                                        foreach ($transaction as $innerKey => &$detail) {
-                                            ?>
-
-
-                                                        <td class="t-product-name">
-                                                            <?php echo $detail[2] ?>
-                                                        </td>
-                                                        <td class="t-product-name">
-                                                            <?php echo $detail[3] ?>
-                                                        </td>
-                                                        <td class="t-product-name">
-                                                            <?php echo $detail[4] ?>
-                                                        </td>
-                                                        <td class="t-product-name">
-                                                            <?php echo $detail[5] ?>
-                                                        </td>
-
-
-                                                        <?php
-                                        }
-                                            ?>
-                                                            <td class="t-product-name" colspan="<?php echo $info[0] ?>">
-                                                                <?php echo $transaction[0][6] ?>
-                                                            </td>
+                                                    <td class="t-product-name" >
+                                                        <?php echo $info[7] ?>
+                                                    </td>
+                                                    <td class="t-product-name" >
+                                                        <?php echo $info[8] ?>
+                                                    </td>
+                                                     <td class="t-product-name" >
+                                                        <?php echo $info[9] ?>
+                                                    </td>
+                                                    <td class="t-product-name" >
+                                                       <?php 
+                                                            $obj[$info[1]] = (object) array();
+                                                            $booksObj = $obj[$info[1]];
+                                                            $booksObj->code = $info[1];
+                                                            $booksObj->title = $info[2];
+                                                            $booksObj->description = $info[3];
+                                                            $booksObj->stock = $info[4];
+                                                            $booksObj->price = $info[10];
+                                                            $booksObj->deleted = $info[5];
+                                                            $booksObj->createDate = $info[6];
+                                                            $booksObj->createBy = $info[7];
+                                                            $booksObj->updateDate = $info[8];
+                                                            $booksObj->updateBy = $info[9];
+                                                        ?>
+                                                        <a href="#" title="Quick view" data-toggle="modal" onclick='openEditModal(<?php echo json_encode($obj[$info[1]]) ?>)' >EDIT
+												        </a>
+                                                    </td>
                                                 </tr>
                                                 <?php
                                         }
@@ -95,7 +153,66 @@
                         </div>
                     </div>
                 </div>
-
+                <div class="modal fade" id="bookModal" tabindex="-1" role="dialog">
+                <form action="" method="post">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h1>Edit This Book</h1>
+                        </div>
+                        <div class="modal-body">
+                            <div class="contact-form-left">
+                                
+                                <input type="text"  name="codeDisplay" id="codeDisplay" disabled/>
+								<input type="text" placeholder="Title" name="title" id="title" required/>
+                                <input type="text" placeholder="Description" name="description" id="description" required/>
+								<input type="text" placeholder="Stock" name="stock" id="stock" required/>
+                                <input type="text" placeholder="Price" name="price" id="price" required/>
+								Deleted <input type="checkbox" id="deletedCheckbox" onclick="changeDeleted()"/>
+                                <input type='hidden' name='deleted' id='deleted' />
+                                <input type='hidden' name='code' id='code' />
+                                <input type="text" placeholder="Create Date" name="createDate" id="createDate" disabled/>
+								<input type="text" placeholder="Create By" name="createBy" id="createBy" disabled/>
+                                <input type="text" placeholder="Update Date" name="updateDate" id="updateDate" disabled/>
+								<input type="text" placeholder="Update By" name="updateBy" id="updateBy" disabled/>
+                                <button class="btn btn-search btn-small" type="submit">Save</button>
+                                
+				                
+				            </div>	
+                        </div>
+                    </div>
+                </div>
+                </form>
+            </div> 
+               <script>
+                   function openEditModal (content) {
+                       console.log(content);
+                       for (var key in content) {
+                           if (content.hasOwnProperty(key)) {
+                               document.getElementById(key).value = content[key];
+                            }
+                       }
+                       if (content.deleted == 'Y') {
+                            document.getElementById("deletedCheckbox").checked = true;
+                       } else {
+                           document.getElementById("deletedCheckbox").checked = false;
+                       }
+                       
+                       document.getElementById("codeDisplay").value = content['code'];
+                       $("#bookModal").modal();
+                   }
+                   
+                   function changeDeleted () {
+                       
+                       if (document.getElementById("deleted").value == 'Y') {
+                           document.getElementById("deleted").value = 'N';
+                       } else {
+                           document.getElementById("deleted").value = 'Y';
+                       }
+                       console.log(document.getElementById("deleted").value);
+                   }
+            </script>   
                 <?php 
                 require 'template/footer.php';
             ?>

@@ -87,6 +87,12 @@ body {
     background: #b3d4fc;
     text-shadow: none;
 }
+.saved-class {
+        background: #2ecc71;
+    padding-top: 10px;
+    /* margin-bottom: 10px; */
+    color: white;
+}
 .browserupgrade {
     margin: 0.2em 0;
     background: #ccc;
