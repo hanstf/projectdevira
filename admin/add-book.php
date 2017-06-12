@@ -14,7 +14,7 @@
         <body>
             <?php
     require 'template/header.php';
-        
+        if(isset($_POST["submit"])) {
          if (isset($_POST["code"]) 
         && isset($_POST["title"]) 
         && isset($_POST["description"]) 
@@ -30,24 +30,62 @@
         || empty($_POST["deleted"])
        ) {  
         } else {
-            $db->update(
-                       "UPDATE book SET "
-                       . "TITLE = '" . $_POST["title"] . "', " 
-                       . "DSCP = '" . $_POST["description"] . "', " 
-                       . "STOCK = '" . $_POST["stock"] . "', " 
-                       . "IS_DEL = '" . $_POST["deleted"] . "', " 
-                       . "PRICE = '" . $_POST["price"] . "', " 
-                       . "DT_UPDATE = NOW(), " 
-                       . "UPDATE_BY = 'hans' WHERE CODE = '" .  $_POST["code"] . "'"
-                        ); // will get the update by from the session available for nw hard code to hans 
-            echo "<div class='saved-class'>
-                    <div class='container'><div class='row'>
-<h3>Successfully saved</h3>
-                        </div></div></div>";
-            unset($_POST);
-        } 
-    }
 
+        $target_dir = "../img/books/";
+        $target_file = $target_dir . basename($_FILES["newImage"]["name"]);
+        $uploadOk = 1;
+        $imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+            if (isset($_FILES["newImage"])) {
+                 $check = getimagesize($_FILES["newImage"]["tmp_name"]);
+                 if($check === false) {
+                    $uploadOk = 0;
+                 } else {
+                    $uploadOk = 1;
+                 }
+
+                 if ($uploadOk == 0) {
+                     echo "<div class='failed-class'>
+                                         <div class='container'><div class='row'>
+                     <h3>Invalid Image</h3>
+                                             </div></div></div>";
+                 } else {
+                     if (move_uploaded_file($_FILES["newImage"]["tmp_name"], $target_file)) {
+                        $uploadOk = 1;
+                         echo "<div class='saved-class'>
+                                                                                          <div class='container'><div class='row'>
+                                                                      <h3>File has been uploaded</h3>
+                                                                                              </div></div></div>";
+                     } else {
+                        $uploadOk = 0;
+                         echo "<div class='failed-class'>
+                                                                 <div class='container'><div class='row'>
+                                             <h3>There was an error while uploading your image</h3>
+                                                                     </div></div></div>";
+                     }
+                 }
+            }
+            if ($uploadOk == 1) {
+                $db->update(
+                                       "UPDATE book SET "
+                                       . "TITLE = '" . $_POST["title"] . "', "
+                                       . "DSCP = '" . $_POST["description"] . "', "
+                                       . "STOCK = '" . $_POST["stock"] . "', "
+                                       . "IS_DEL = '" . $_POST["deleted"] . "', "
+                                       . "PRICE = '" . $_POST["price"] . "', "
+                                       . "IMAGE = '". $target_file ."', "
+                                       . "DT_UPDATE = NOW(), "
+                                       . "UPDATE_BY = 'hans' WHERE CODE = '" .  $_POST["code"] . "'"
+                                        ); // will get the update by from the session available for nw hard code to hans
+                            echo "<div class='saved-class'>
+                                    <div class='container'><div class='row'>
+                <h3>Successfully saved</h3>
+                                        </div></div></div>";
+                            unset($_POST);
+            }
+
+        } 
+        }
+    }
     $books = $db->get("SELECT * FROM book");
 ?>
                 <div class="shopping-cart-area section-padding">
@@ -89,7 +127,7 @@
                                                         <?php echo $info[0]+1 ?>
                                                     </td>
                                                     <td class="t-product-name" >
-                                                        <img width="170px" height="170px" src="../img/books/<?php echo $info[1] ?>.jpg"></img>
+                                                        <img width="170px" height="170px" src="<?php if ($info[11] != '') { echo $info[11]; } else { echo '../img/books/no-image.jpg'; } ?>"></img>
                                                     </td>
                                                     <td class="t-product-name" >
                                                         <?php echo $info[1] ?>
@@ -136,6 +174,7 @@
                                                             $booksObj->createBy = $info[7];
                                                             $booksObj->updateDate = $info[8];
                                                             $booksObj->updateBy = $info[9];
+                                                            $booksObj->image = $info[11];
                                                         ?>
                                                         <a href="#" title="Quick view" data-toggle="modal" onclick='openEditModal(<?php echo json_encode($obj[$info[1]]) ?>)' >EDIT
 												        </a>
@@ -154,7 +193,7 @@
                     </div>
                 </div>
                 <div class="modal fade" id="bookModal" tabindex="-1" role="dialog">
-                <form action="" method="post">
+                <form action="" method="post" enctype="multipart/form-data">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -167,6 +206,8 @@
                                 <input type="text"  name="codeDisplay" id="codeDisplay" disabled/>
 								<input type="text" placeholder="Title" name="title" id="title" required/>
                                 <input type="text" placeholder="Description" name="description" id="description" required/>
+                                <img width="170px" height="170px" id="imageDisplay" style="margin-bottom:10px" ></img>
+                                <p>Change this Image</p> <input type="file" name="newImage" id="newImage">
 								<input type="text" placeholder="Stock" name="stock" id="stock" required/>
                                 <input type="text" placeholder="Price" name="price" id="price" required/>
 								Deleted <input type="checkbox" id="deletedCheckbox" onclick="changeDeleted()"/>
@@ -176,7 +217,7 @@
 								<input type="text" placeholder="Create By" name="createBy" id="createBy" disabled/>
                                 <input type="text" placeholder="Update Date" name="updateDate" id="updateDate" disabled/>
 								<input type="text" placeholder="Update By" name="updateBy" id="updateBy" disabled/>
-                                <button class="btn btn-search btn-small" type="submit">Save</button>
+                                <button class="btn btn-search btn-small" type="submit" name="submit">Save</button>
                                 
 				                
 				            </div>	
@@ -189,9 +230,12 @@
                    function openEditModal (content) {
                        console.log(content);
                        for (var key in content) {
-                           if (content.hasOwnProperty(key)) {
-                               document.getElementById(key).value = content[key];
-                            }
+                        if (key != 'image'){
+                               if (content.hasOwnProperty(key)) {
+                                  document.getElementById(key).value = content[key];
+                               }
+                        }
+
                        }
                        if (content.deleted == 'Y') {
                             document.getElementById("deletedCheckbox").checked = true;
@@ -200,6 +244,13 @@
                        }
                        
                        document.getElementById("codeDisplay").value = content['code'];
+
+                       if (content['image']) {
+                           document.getElementById("imageDisplay").src = content['image'];
+                       } else {
+                           document.getElementById("imageDisplay").src = "../img/books/no-image.jpg";
+                       }
+
                        $("#bookModal").modal();
                    }
                    

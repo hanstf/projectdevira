@@ -93,6 +93,12 @@ body {
     /* margin-bottom: 10px; */
     color: white;
 }
+.failed-class {
+  background: #e74c3c;
+  padding-top: 10px;
+  /* margin-bottom: 10px; */
+  color: white;
+}
 .browserupgrade {
     margin: 0.2em 0;
     background: #ccc;
