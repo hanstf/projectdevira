@@ -65,7 +65,28 @@
                  }
             }
             if ($uploadOk == 1) {
-                $db->update(
+                if ($_POST["isnew"] == true ) {
+                    $db->update(
+                                       "INSERT INTO book (ID, CODE, TITLE, DSCP, STOCK, IS_DEL, DT_CREATE, CREATE_BY, DT_UPDATE, UPDATE_BY, PRICE, IMAGE) VALUES ("
+                                       . "FLOOR(RAND() * 401) + 100, "
+                                       . "'" . $_POST["code"] . "', "
+                                       . "'" . $_POST["title"] . "', "
+                                       . "'" . $_POST["description"] . "', "
+                                       . "" . $_POST["stock"] . ", "
+                                       . "'" . $_POST["deleted"] . "', "
+                                       . "NOW(), "
+                                       . "'hans', "
+                                       . "NOW(), "
+                                       . "'hans', "
+                                       . "" . $_POST["price"] . ", "
+                                       . "'". $target_file ."');"
+                                        ); // will get the update by and create by from the session available for nw hard code to hans
+                            echo "<div class='saved-class'>
+                                    <div class='container'><div class='row'>
+                <h3>Successfully saved</h3>
+                                        </div></div></div>";
+                } else {
+                    $db->update(
                                        "UPDATE book SET "
                                        . "TITLE = '" . $_POST["title"] . "', "
                                        . "DSCP = '" . $_POST["description"] . "', "
@@ -80,13 +101,30 @@
                                     <div class='container'><div class='row'>
                 <h3>Successfully saved</h3>
                                         </div></div></div>";
+                }
+                
                             unset($_POST);
             }
 
         } 
         }
     }
-    $books = $db->get("SELECT * FROM book");
+    $showPerPage = 2;
+    if (isset($_POST["page"])) {
+        $books = $db->get("SELECT * FROM book LIMIT " .$showPerPage. " OFFSET ".($showPerPage * $_POST["page"])."");
+    if (isset($_POST["searchBtn"])) {
+        if (empty($_POST["search"]) == false && $_POST["search"] != "") {
+            $books = $db->get("SELECT * FROM book WHERE CODE LIKE '%". $_POST["search"] ."%' OR TITLE LIKE '%". $_POST["search"] ."%' OR DSCP LIKE '%". $_POST["search"] ."%' OR PRICE LIKE '%". $_POST["search"] ."%' LIMIT " .$showPerPage. " OFFSET ".($showPerPage * $_POST["page"])."");
+        }
+    }
+    } else {
+         $books = $db->get("SELECT * FROM book LIMIT " .$showPerPage. " OFFSET 0");
+    if (isset($_POST["searchBtn"])) {
+        if (empty($_POST["search"]) == false && $_POST["search"] != "") {
+            $books = $db->get("SELECT * FROM book WHERE CODE LIKE '%". $_POST["search"] ."%' OR TITLE LIKE '%". $_POST["search"] ."%' OR DSCP LIKE '%". $_POST["search"] ."%' OR PRICE LIKE '%". $_POST["search"] ."%' LIMIT " .$showPerPage. " OFFSET 0");
+        }
+    }
+    }
 ?>
                 <div class="shopping-cart-area section-padding">
                     <div class="container">
@@ -98,7 +136,11 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <div class="wishlist-table-area table-responsive">
+                                <form action="" method="post">
+                                   <input type="text" style="width:250px;" placeholder="Title, Code, description or price" name="search" id="search" value="<?php echo ((isset($_POST["search"]) == true) ?  $_POST["search"] :  '') ?>"/>
+                                   <button class="btn btn-search btn-small" style="margin-top:10px;margin-bottom:10px;" name="searchBtn" id="searchBtn">Search</button>
+                                </form>
+                                <div class="table-responsive">
                                     <table>
                                         <thead>
                                             <tr>
@@ -124,7 +166,7 @@
                                     ?>
                                                 <tr>
                                                     <td class="t-product-name" >
-                                                        <?php echo $info[0]+1 ?>
+                                                        <?php echo $key+1 ?>
                                                     </td>
                                                     <td class="t-product-name" >
                                                         <img width="170px" height="170px" src="<?php if ($info[11] != '') { echo $info[11]; } else { echo '../img/books/no-image.jpg'; } ?>"></img>
@@ -187,6 +229,27 @@
 
                                         </tbody>
                                     </table>
+                                    <button class="btn btn-search btn-small" data-toggle="modal" onclick='openEditModal()' style="margin-top:10px;margin-bottom:10px;margin-left:90%">Add New</button>
+                                    <form action="" method="post">
+                                        <ul class="pagination">
+                                           <?php 
+                                            $totalItem = $db->get("SELECT COUNT(*) AS TOTAL FROM book ")[0][0];
+    if (isset($_POST["searchBtn"])) {
+        if (empty($_POST["search"]) == false && $_POST["search"] != "") {
+            $totalItem = $db->get("SELECT COUNT(*) FROM book WHERE CODE LIKE '%". $_POST["search"] ."%' OR TITLE LIKE '%". $_POST["search"] ."%' OR DSCP LIKE '%". $_POST["search"] ."%' OR PRICE LIKE '%". $_POST["search"] ."%'")[0][0];
+        }
+    }
+                                            $totalPage = ceil($totalItem/$showPerPage);
+                                            for ($i = 0; $i< $totalPage; $i++) {
+                                                if(isset($_POST['page'])) {
+                                                    echo '<li><button type="submit" name="page" value="'. $i .'" '. ($_POST['page'] == $i ? 'disabled': '') .'>'.($i+1).'</button></li>';  
+                                                }else {
+                                                    echo '<li><button type="submit" name="page" value="'. $i .'" '. (0 == $i ? 'disabled': '') .'>'.($i+1).'</button></li>';    
+                                                }
+                                            }
+                                            ?>
+                                        </ul>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -202,8 +265,7 @@
                         </div>
                         <div class="modal-body">
                             <div class="contact-form-left">
-                                
-                                <input type="text"  name="codeDisplay" id="codeDisplay" disabled/>
+                                <input type="text" placeholder="Book Code" name="codeDisplay" id="codeDisplay" onchange="changeCode()" disabled required/>
 								<input type="text" placeholder="Title" name="title" id="title" required/>
                                 <input type="text" placeholder="Description" name="description" id="description" required/>
                                 <img width="170px" height="170px" id="imageDisplay" style="margin-bottom:10px" ></img>
@@ -213,13 +275,12 @@
 								Deleted <input type="checkbox" id="deletedCheckbox" onclick="changeDeleted()"/>
                                 <input type='hidden' name='deleted' id='deleted' />
                                 <input type='hidden' name='code' id='code' />
+                                <input type='hidden' name='isnew' id='isnew' />
                                 <input type="text" placeholder="Create Date" name="createDate" id="createDate" disabled/>
 								<input type="text" placeholder="Create By" name="createBy" id="createBy" disabled/>
                                 <input type="text" placeholder="Update Date" name="updateDate" id="updateDate" disabled/>
 								<input type="text" placeholder="Update By" name="updateBy" id="updateBy" disabled/>
                                 <button class="btn btn-search btn-small" type="submit" name="submit">Save</button>
-                                
-				                
 				            </div>	
                         </div>
                     </div>
@@ -228,30 +289,41 @@
             </div> 
                <script>
                    function openEditModal (content) {
-                       console.log(content);
-                       for (var key in content) {
-                        if (key != 'image'){
-                               if (content.hasOwnProperty(key)) {
-                                  document.getElementById(key).value = content[key];
-                               }
-                        }
+                       if(content) {
+                           console.log(content);
+                           for (var key in content) {
+                                if (key != 'image'){
+                                   if (content.hasOwnProperty(key)) {
+                                      document.getElementById(key).value = content[key];
+                                   }
+                                }
 
-                       }
-                       if (content.deleted == 'Y') {
-                            document.getElementById("deletedCheckbox").checked = true;
-                       } else {
-                           document.getElementById("deletedCheckbox").checked = false;
-                       }
-                       
-                       document.getElementById("codeDisplay").value = content['code'];
+                           }
+                           if (content.deleted == 'Y') {
+                                document.getElementById("deletedCheckbox").checked = true;
+                           } else {
+                               document.getElementById("deletedCheckbox").checked = false;
+                           }
 
-                       if (content['image']) {
-                           document.getElementById("imageDisplay").src = content['image'];
+                           document.getElementById("codeDisplay").value = content['code'];
+
+                           if (content['image']) {
+                               document.getElementById("imageDisplay").src = content['image'];
+                           } else {
+                               document.getElementById("imageDisplay").src = "../img/books/no-image.jpg";
+                           }
+                           document.getElementById("isnew").value = false;
                        } else {
-                           document.getElementById("imageDisplay").src = "../img/books/no-image.jpg";
+                           document.getElementById("isnew").value = true;
+                           document.getElementById("codeDisplay").disabled = false;
+                           document.getElementById("deleted").value = 'N';
                        }
 
                        $("#bookModal").modal();
+                   }
+                   
+                   function changeCode () {
+                       document.getElementById("code").value = document.getElementById("codeDisplay").value;
                    }
                    
                    function changeDeleted () {

@@ -2,8 +2,23 @@
     require_once '../component/dbconnect.php';
     require_once '../component/database.php';
     $db = new database($pdo);
-    $transactions = $db->get("SELECT COUNT(RANDOM_ID) AS TOTAL_ROWS, RANDOM_ID FROM transaction GROUP BY RANDOM_ID");
-
+//    $transactions = $db->get("SELECT COUNT(RANDOM_ID) AS TOTAL_ROWS, RANDOM_ID FROM transaction GROUP BY RANDOM_ID");
+    $showPerPage = 2;
+    if (isset($_POST["page"])) {
+        $transactions = $db->get("SELECT COUNT(RANDOM_ID) AS TOTAL_ROWS, RANDOM_ID FROM transaction GROUP BY RANDOM_ID LIMIT " .$showPerPage. " OFFSET ".($showPerPage * $_POST["page"])."");
+    if (isset($_POST["searchBtn"])) {
+        if (empty($_POST["search"]) == false && $_POST["search"] != "") {
+            $transactions = $db->get("SELECT COUNT(RANDOM_ID) AS TOTAL_ROWS, RANDOM_ID FROM transaction GROUP BY RANDOM_ID HAVING RANDOM_ID LIKE '%". $_POST["search"] ."%' LIMIT " .$showPerPage. " OFFSET ".($showPerPage * $_POST["page"])."");
+        }
+    }
+    } else {
+         $transactions = $db->get("SELECT COUNT(RANDOM_ID) AS TOTAL_ROWS, RANDOM_ID FROM transaction GROUP BY RANDOM_ID LIMIT " .$showPerPage. " OFFSET 0");
+    if (isset($_POST["searchBtn"])) {
+        if (empty($_POST["search"]) == false && $_POST["search"] != "") {
+            $transactions = $db->get("SELECT COUNT(RANDOM_ID) AS TOTAL_ROWS, RANDOM_ID FROM transaction GROUP BY RANDOM_ID HAVING RANDOM_ID LIKE '%". $_POST["search"] ."%' LIMIT " .$showPerPage. " OFFSET 0");
+        }
+    }
+    }
 ?>
 
 
@@ -27,7 +42,11 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <div class="wishlist-table-area table-responsive">
+                               <form action="" method="post">
+                                   <input type="text" style="width:200px;" placeholder="Random Id" name="search" id="search" value="<?php echo ((isset($_POST["search"]) == true) ?  $_POST["search"] :  '') ?>"/>
+                                   <button class="btn btn-search btn-small" style="margin-top:10px;margin-bottom:10px;" name="searchBtn" id="searchBtn">Search</button>
+                                </form>
+                                <div class="table-responsive">
                                     <table>
                                         <thead>
                                             <tr>
@@ -91,6 +110,22 @@
 
                                         </tbody>
                                     </table>
+                                    
+                                    <form action="" method="post">
+                                        <ul class="pagination">
+                                           <?php 
+                                            $totalItem = count($transactions);
+                                            $totalPage = ceil($totalItem/$showPerPage);
+                                            for ($i = 0; $i< $totalPage; $i++) {
+                                                if(isset($_POST['page'])) {
+                                                    echo '<li><button type="submit" name="page" value="'. $i .'" '. ($_POST['page'] == $i ? 'disabled': '') .'>'.($i+1).'</button></li>';  
+                                                }else {
+                                                    echo '<li><button type="submit" name="page" value="'. $i .'" '. (0 == $i ? 'disabled': '') .'>'.($i+1).'</button></li>';    
+                                                }
+                                            }
+                                            ?>
+                                        </ul>
+                                    </form>
                                 </div>
                             </div>
                         </div>
