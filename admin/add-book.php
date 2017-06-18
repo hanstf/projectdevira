@@ -30,12 +30,11 @@
         || empty($_POST["deleted"])
        ) {  
         } else {
-
+        $uploadOk = 1;
         $target_dir = "../img/books/";
         $target_file = $target_dir . basename($_FILES["newImage"]["name"]);
-        $uploadOk = 1;
         $imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
-            if (isset($_FILES["newImage"])) {
+            if (isset($_FILES["newImage"]) == true && $_FILES["newImage"]["tmp_name"] != "" && $_FILES["newImage"]["name"] != "") {
                  $check = getimagesize($_FILES["newImage"]["tmp_name"]);
                  if($check === false) {
                     $uploadOk = 0;
@@ -65,7 +64,8 @@
                  }
             }
             if ($uploadOk == 1) {
-                if ($_POST["isnew"] == true ) {
+                $img = ((isset($_FILES["newImage"]) == true && $_FILES["newImage"]["tmp_name"] != "" && $_FILES["newImage"]["name"] != "") ? "IMAGE = '". $target_file ."', " : "");
+                if ($_POST["isnew"] == "true" ) {
                     $db->update(
                                        "INSERT INTO book (ID, CODE, TITLE, DSCP, STOCK, IS_DEL, DT_CREATE, CREATE_BY, DT_UPDATE, UPDATE_BY, PRICE, IMAGE) VALUES ("
                                        . "FLOOR(RAND() * 401) + 100, "
@@ -93,7 +93,7 @@
                                        . "STOCK = '" . $_POST["stock"] . "', "
                                        . "IS_DEL = '" . $_POST["deleted"] . "', "
                                        . "PRICE = '" . $_POST["price"] . "', "
-                                       . "IMAGE = '". $target_file ."', "
+                                       . $img
                                        . "DT_UPDATE = NOW(), "
                                        . "UPDATE_BY = 'hans' WHERE CODE = '" .  $_POST["code"] . "'"
                                         ); // will get the update by from the session available for nw hard code to hans
@@ -242,9 +242,9 @@
                                             $totalPage = ceil($totalItem/$showPerPage);
                                             for ($i = 0; $i< $totalPage; $i++) {
                                                 if(isset($_POST['page'])) {
-                                                    echo '<li><button type="submit" name="page" value="'. $i .'" '. ($_POST['page'] == $i ? 'disabled': '') .'>'.($i+1).'</button></li>';  
-                                                }else {
-                                                    echo '<li><button type="submit" name="page" value="'. $i .'" '. (0 == $i ? 'disabled': '') .'>'.($i+1).'</button></li>';    
+                                                    echo '<li><button type="submit" name="page" '. ($_POST['page'] == $i ? 'style="font-weight:bold;border: 0;width: 20px;text-align: center;background: transparent;"': 'style="border: 0;width: 20px;text-align: center;background: transparent;"') .' value="'. $i .'" '. ($_POST['page'] == $i ? 'disabled': '') .'>'.($i+1).'</button></li>';
+                                                } else {
+                                                    echo '<li><button type="submit" name="page" '. (0 == $i ? 'style="font-weight:bold;border: 0;width: 20px;text-align: center;background: transparent;"': 'style="border: 0;width: 20px;text-align: center;background: transparent;"') .' value="'. $i .'" '. (0 == $i ? 'disabled': '') .'>'.($i+1).'</button></li>';
                                                 }
                                             }
                                             ?>
@@ -289,6 +289,7 @@
             </div> 
                <script>
                    function openEditModal (content) {
+                   console.log(content);
                        if(content) {
                            console.log(content);
                            for (var key in content) {

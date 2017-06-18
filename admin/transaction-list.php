@@ -118,10 +118,10 @@
                                             $totalPage = ceil($totalItem/$showPerPage);
                                             for ($i = 0; $i< $totalPage; $i++) {
                                                 if(isset($_POST['page'])) {
-                                                    echo '<li><button type="submit" name="page" value="'. $i .'" '. ($_POST['page'] == $i ? 'disabled': '') .'>'.($i+1).'</button></li>';  
-                                                }else {
-                                                    echo '<li><button type="submit" name="page" value="'. $i .'" '. (0 == $i ? 'disabled': '') .'>'.($i+1).'</button></li>';    
-                                                }
+                                                                                                    echo '<li><button type="submit" name="page" '. ($_POST['page'] == $i ? 'style="font-weight:bold;border: 0;width: 20px;text-align: center;background: transparent;"': 'style="border: 0;width: 20px;text-align: center;background: transparent;"') .' value="'. $i .'" '. ($_POST['page'] == $i ? 'disabled': '') .'>'.($i+1).'</button></li>';
+                                                                                                } else {
+                                                                                                    echo '<li><button type="submit" name="page" '. (0 == $i ? 'style="font-weight:bold;border: 0;width: 20px;text-align: center;background: transparent;"': 'style="border: 0;width: 20px;text-align: center;background: transparent;"') .' value="'. $i .'" '. (0 == $i ? 'disabled': '') .'>'.($i+1).'</button></li>';
+                                                                                                }
                                             }
                                             ?>
                                         </ul>
